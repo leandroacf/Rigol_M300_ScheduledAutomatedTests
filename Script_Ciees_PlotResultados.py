@@ -7,7 +7,7 @@ Created on Thu Mar 12 13:38:27 2026
 
 Plot measurement results obtained with Script_Ciees_MedeLampadas.py
 
-Configure measurement parameters in portuguese for operator usage
+Configure measurement parameters prior to use
 
 """
 
@@ -15,33 +15,36 @@ import numpy as np
 import matplotlib.pyplot as plt
 # %matplotlib inline
 from os import listdir
+import pandas as pd
 plt.close('all')
 
 
 #%% parametros para os plots
-list_dias_plot = ['2026_05_28','2026_05_29','2026_05_30','2026_05_31',\
-                  '2026_06_01']
-mapeamento_horarios = {0: "02:35",1: "04:35",2: "08:35",3: "10:35",4: "12:35",\
+ls_plot_days = ['2026_05_28','2026_05_29','2026_05_30','2026_05_31',\
+                  '2026_06_01','2026_06_02']
+# map_timing = {0: "00:30",1: "03:30",2: "06:30",3: "09:30",4: "12:30",\
+#               5: "15:30",6: "18:30",7: "21:30"}
+map_timing = {0: "02:35",1: "04:35",2: "08:35",3: "10:35",4: "12:35",\
               5: "14:35",6: "16:35",7: "18:35",8: "20:35",9: "22:35"}
-Canais_TermoPares = np.array([421,422])
-Canais_LoopCorrente = np.array([401, 402, 403, 404, 405, 406, 407, 408,\
+Ch_ThermoCoup = np.array([421,422])
+Ch_CurrentSensor = np.array([401, 402, 403, 404, 405, 406, 407, 408,\
                                 409, 410])
-# Canais_LoopCorrente = np.array([401, 402, 403, 404, 405, 406, 407, 408,\
+# Ch_CurrentSensor = np.array([401, 402, 403, 404, 405, 406, 407, 408,\
 #                                 409, 410, 411, 412, 413, 414, 415, 416,\
 #                                 417, 418, 419, 420])    
 
-Fator_Calibracap_Loops = np.array([0.333, 0.333, 0.333, 0.333, 0.333, 0.333,\
-                                   0.333, 0.333, 0.333, 0.333])
-# Fator_Calibracap_Loops = np.array([0.333, 0.333, 0.333, 0.333, 0.333, 0.333,\
-#                                    0.333, 0.333, 0.333, 0.333, 0.333, 0.333,\
-#                                    0.333, 0.333, 0.333, 0.333, 0.333, 0.333,\
-#                                    0.333, 0.333])
+CurrentSensor_CalFactor = np.array([0.335,0.335, 0.335, 0.331, 0.335, 0.334,\
+                                   0.329, 0.331, 0.334, 0.330])
+# CurrentSensor_CalFactor = np.array([0.335,0.335, 0.335, 0.331, 0.335, 0.334,\
+#                                    0.329, 0.331, 0.334, 0.330, 0.332, 0.331,\
+#                                    0.329 ,0.330 ,0.329 ,0.334, 0.331, 0.333,\
+#                                    0.334, 0.331])
 
 #%% definicoes funcoes
 def plot_m300measdata_TcT_Nchannels(\
-    listdir_days = list_dias_plot,\
-    Nchannels = Canais_TermoPares,\
-    number_map = mapeamento_horarios,\
+    listdir_days = ls_plot_days,\
+    Nchannels = Ch_ThermoCoup,\
+    number_map = map_timing,\
     outputfig_name = 'Plot_TermoPar.png'):
 
     res = []
@@ -64,10 +67,12 @@ def plot_m300measdata_TcT_Nchannels(\
     
     fig, ax = plt.subplots(figsize=(7,4))
     xticks_ax = np.arange(0,len(xlabel_ls))
+    Ch_ls=[]
     for i in np.arange(len(Nchannels)):
 
         ax.plot(xticks_ax, d2plot[::,i], marker='o',\
                 label='Ch '+str(Nchannels[i]), linewidth=2)
+        Ch_ls.append('Ch. '+str(Nchannels[i])+' (deg C)')
 
     typ_fontsize=9
     ax.set_xticks(xticks_ax[0:-1:3])
@@ -84,14 +89,21 @@ def plot_m300measdata_TcT_Nchannels(\
     plt.show()
     
     fig.savefig(outputfig_name, dpi=300, bbox_inches='tight')
+
+    date_hour_ls = []
+    for i in np.arange(len(xlabel_ls)):
+        date_hour_ls.append(xlabel_ls[i].replace('\n',' '))
+    
+    data_temp=pd.DataFrame(d2plot,columns=Ch_ls,index=date_hour_ls)
         
+    return data_temp
 
 def plot_m300measdata_ACvolt_Nchannels(\
-    listdir_days = list_dias_plot,\
-    Nchannels = Canais_LoopCorrente,\
-    number_map = mapeamento_horarios,\
+    listdir_days = ls_plot_days,\
+    Nchannels = Ch_CurrentSensor,\
+    number_map = map_timing,\
     #,np.array([0.333,0.333]),\
-    calibration_sensor_arr=Fator_Calibracap_Loops,\
+    calibration_sensor_arr=CurrentSensor_CalFactor,\
     outputfig_name = 'Plot_ACvoltage.png'):
 
     res = []
@@ -112,15 +124,22 @@ def plot_m300measdata_ACvolt_Nchannels(\
         ydata_arr=dataread[idxs_inpch,1]
         ydata_ls.append(ydata_arr)
     d2plot = np.array(ydata_ls)
+    
     # print(ydata_arr)
     fig, ax = plt.subplots(1,2,figsize=(10,5))
     xticks_ax = np.arange(0,len(xlabel_ls))
     idx_ax = 0    
-
+    
+    Ch_ls = []
+    Ch_ls_curr = []
+    # Ch_ls.append('Label')
     for i in np.arange(len(Nchannels)):
 
         ax[idx_ax].plot(xticks_ax, d2plot[::,i]/1e-3, marker='o',\
-                label='Canal '+str(Nchannels[i]), linewidth=2)
+                label='Ch. '+str(Nchannels[i]), linewidth=2)
+        Ch_ls.append('Ch. '+str(Nchannels[i])+' (V)')
+        Ch_ls_curr.append('Ch. '+str(Nchannels[i])+' (mA)')
+        
     # print(d2plot[::,i])
     typ_fontsize=9
     ax[idx_ax].set_xticks(xticks_ax[0:-1:3])
@@ -134,10 +153,13 @@ def plot_m300measdata_ACvolt_Nchannels(\
 
     idx_ax = 1
 
+    d2plot_curr = np.zeros(np.shape(d2plot))
     for i in np.arange(len(Nchannels)):
 
         ax[idx_ax].plot(xticks_ax, (d2plot[::,i]/calibration_sensor_arr[i])/1e-3, marker='o',\
-                label='Canal '+str(Nchannels[i]), linewidth=2)
+                label='Ch. '+str(Nchannels[i]), linewidth=2)
+        d2plot_curr[::,i]=(d2plot[::,i]/calibration_sensor_arr[i])/1e-3
+        
         # print(np.shape(d2plot[::,i]/1e-3))
     # print(d2plot[::,i])
     typ_fontsize=9
@@ -158,11 +180,28 @@ def plot_m300measdata_ACvolt_Nchannels(\
     
     fig.savefig(outputfig_name, dpi=300, bbox_inches='tight')
         
+    date_hour_ls = []
+    for i in np.arange(len(xlabel_ls)):
+        date_hour_ls.append(xlabel_ls[i].replace('\n',' '))
+    
+    data_V=pd.DataFrame(d2plot,columns=Ch_ls,index=date_hour_ls)
+    # data_full_AC.to_csv("MeasData_Voltage.csv")
+    data_mA=pd.DataFrame(d2plot_curr,columns=Ch_ls_curr,index=date_hour_ls)
+    # dd2.to_csv("MeasData_Current_Estimated.csv")
 
+
+    return data_V,data_mA
+
+def export_meas2csv(data_V,df_mA,data_temp):
+
+    data_concat_v=pd.concat([data_V,data_temp], axis=1)
+    data_concat_v.to_csv("MeasData_Voltage_Temperature.csv")
+    data_concat_ma=pd.concat([data_mA,data_temp], axis=1)
+    data_concat_ma.to_csv("MeasData_EstimatedCurr_Temperature.csv")
     
     
-#%% o que sera realmente executado
+#%% Get data and plot/export
 
-plot_m300measdata_TcT_Nchannels()
-plot_m300measdata_ACvolt_Nchannels()
-
+data_temp=plot_m300measdata_TcT_Nchannels()
+data_V,data_mA=plot_m300measdata_ACvolt_Nchannels()
+export_meas2csv(data_V,data_mA,data_temp)

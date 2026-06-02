@@ -27,7 +27,7 @@ def my_task(label=0):
     print("Efetua Leitura e Salva Medidas em Subdiretorio...")
 
     timestamp = datetime.now().strftime("%Y_%m_%d")
-    folder_path = Path(f"./{timestamp}")
+    folder_path = Path(working_dir_data+'//'+f"./{timestamp}")
     folder_path.mkdir(parents=True, exist_ok=True)
 
     # rm.list_resources()

@@ -20,8 +20,10 @@ plt.close('all')
 
 
 #%% parametros para os plots
+working_dir_data = '10LampMeasure_ValidateAutomation'
 ls_plot_days = ['2026_05_28','2026_05_29','2026_05_30','2026_05_31',\
                   '2026_06_01','2026_06_02']
+
 # map_timing = {0: "00:30",1: "03:30",2: "06:30",3: "09:30",4: "12:30",\
 #               5: "15:30",6: "18:30",7: "21:30"}
 map_timing = {0: "02:35",1: "04:35",2: "08:35",3: "10:35",4: "12:35",\
@@ -45,12 +47,16 @@ def plot_m300measdata_TcT_Nchannels(\
     listdir_days = ls_plot_days,\
     Nchannels = Ch_ThermoCoup,\
     number_map = map_timing,\
+    working_dir = working_dir_data,\
     outputfig_name = 'Plot_TermoPar.png'):
-
+    
+    # ls_plot_days = [working_dir_data+'//' + item for item in ls_plot_days_base]
+    
     res = []
     for i in listdir_days:
         # Iterate directory
-        for file in listdir(i):
+        print(working_dir+'//'+i)
+        for file in listdir(working_dir+'//'+i):
             # check only text files
             if np.logical_and(file.endswith('.csv'),'meas_data_TcT' in file):
                 res.append(i+'/'+file)
@@ -60,7 +66,7 @@ def plot_m300measdata_TcT_Nchannels(\
     ydata_ls = []
     for i in res:
         xlabel_ls.append(i[0:10].replace('_','/')+'\n'+number_map[int(i[-5])])
-        dataread = np.genfromtxt(i, delimiter=',',skip_header=1)
+        dataread = np.genfromtxt(working_dir+'//'+i, delimiter=',',skip_header=1)
         ydata_arr=dataread[::,1]
         ydata_ls.append(ydata_arr)
     d2plot = np.array(ydata_ls)
@@ -102,6 +108,7 @@ def plot_m300measdata_ACvolt_Nchannels(\
     listdir_days = ls_plot_days,\
     Nchannels = Ch_CurrentSensor,\
     number_map = map_timing,\
+    working_dir = working_dir_data,\
     #,np.array([0.333,0.333]),\
     calibration_sensor_arr=CurrentSensor_CalFactor,\
     outputfig_name = 'Plot_ACvoltage.png'):
@@ -109,7 +116,7 @@ def plot_m300measdata_ACvolt_Nchannels(\
     res = []
     for i in listdir_days:
         # Iterate directory
-        for file in listdir(i):
+        for file in listdir(working_dir+'//'+i):
             # check only text files
             if np.logical_and(file.endswith('.csv'),'meas_data_ACvolt' in file):
                 res.append(i+'/'+file)
@@ -119,7 +126,7 @@ def plot_m300measdata_ACvolt_Nchannels(\
     ydata_ls = []
     for i in res:
         xlabel_ls.append(i[0:10].replace('_','/')+'\n'+number_map[int(i[-5])])
-        dataread = np.genfromtxt(i, delimiter=',',skip_header=1)
+        dataread = np.genfromtxt(working_dir+'//'+i, delimiter=',',skip_header=1)
         idxs_inpch = np.where(np.isin(dataread[::,0], Nchannels))[0]
         ydata_arr=dataread[idxs_inpch,1]
         ydata_ls.append(ydata_arr)

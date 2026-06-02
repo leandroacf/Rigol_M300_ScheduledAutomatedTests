@@ -48,7 +48,7 @@ def plot_m300measdata_TcT_Nchannels(\
     Nchannels = Ch_ThermoCoup,\
     number_map = map_timing,\
     working_dir = working_dir_data,\
-    outputfig_name = 'Plot_TermoPar.png'):
+    outputfig_name = 'Plot_ThermoCoup.png'):
     
     # ls_plot_days = [working_dir_data+'//' + item for item in ls_plot_days_base]
     
